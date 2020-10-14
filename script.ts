@@ -5,6 +5,7 @@ dotenv.config();
 import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 import {createGlobalAttributes, getGlobalAttributes, updateAttributesTerms} from "./Attributes";
 import { createCategories, createCategoriesFromCollection, updateWooCategories } from "./Collections";
+import { createProducts } from "./Products";
  
 const api = new WooCommerceRestApi({
   url: "http://localhost",
@@ -34,7 +35,7 @@ async function main() {
   // createCategories(api)
   // updateWooCategories(api)
   // createCategoriesFromCollection(api)
-  
+  createProducts(api)
 }
 
 main()

@@ -1,0 +1,83 @@
+import { PrismaClient, product_category } from "@prisma/client";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const prisma = new PrismaClient();
+export async function createProducts(api) {
+
+  const products = await prisma.product_product.findMany({
+        select:{
+          name:true,
+          seo_description:true,
+          price_amount:true,
+          slug:true,
+          is_published:true,
+          product_assignedproductattribute:{
+            select:{
+              product_assignedproductattribute_values:{
+                select:{
+                  product_attributevalue:{
+                    select:{
+                      slug:true,
+                      product_attribute:{
+                        select:{
+                          slug:true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          product_productimage:{
+            select:{
+              image:true,
+            }
+          },
+          product_category:{
+            select:{
+              slug:true,
+            }
+          },
+          product_productvariant:{
+            select:{
+              name:true,
+              sku:true,
+              price_override_amount:true,
+              track_inventory:true,
+              warehouse_stock:{
+                select:{
+                  quantity:true
+                }
+              },
+              product_assignedvariantattribute:{
+                select:{
+                  product_assignedvariantattribute_values:{
+                    select:{
+                      product_attributevalue:{
+                        select:{
+                          slug:true,
+                          product_attribute:{
+                            select:{
+                              slug:true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            }
+          },
+          product_producttype:{
+            select:{
+              name:true,
+              has_variants:true
+            }
+          }
+        }
+      })
+      console.log(products[0])
+}
