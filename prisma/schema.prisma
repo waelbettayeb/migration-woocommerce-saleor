@@ -1,0 +1,1486 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account_address {
+  id                                                                       Int                      @default(autoincrement()) @id
+  first_name                                                               String
+  last_name                                                                String
+  company_name                                                             String
+  street_address_1                                                         String
+  street_address_2                                                         String
+  city                                                                     String
+  postal_code                                                              String
+  country                                                                  String
+  country_area                                                             String
+  phone                                                                    String
+  city_area                                                                String
+  account_user_account_addressToaccount_user_default_billing_address_id    account_user[]           @relation("account_addressToaccount_user_default_billing_address_id")
+  account_user_account_addressToaccount_user_default_shipping_address_id   account_user[]           @relation("account_addressToaccount_user_default_shipping_address_id")
+  account_user_addresses                                                   account_user_addresses[]
+  checkout_checkout_account_addressTocheckout_checkout_billing_address_id  checkout_checkout[]      @relation("account_addressTocheckout_checkout_billing_address_id")
+  checkout_checkout_account_addressTocheckout_checkout_shipping_address_id checkout_checkout[]      @relation("account_addressTocheckout_checkout_shipping_address_id")
+  order_order_account_addressToorder_order_billing_address_id              order_order[]            @relation("account_addressToorder_order_billing_address_id")
+  order_order_account_addressToorder_order_shipping_address_id             order_order[]            @relation("account_addressToorder_order_shipping_address_id")
+  site_sitesettings                                                        site_sitesettings[]
+  warehouse_warehouse                                                      warehouse_warehouse[]
+}
+
+model account_customerevent {
+  id           Int          @default(autoincrement()) @id
+  date         DateTime
+  type         String
+  parameters   Json
+  order_id     Int?
+  user_id      Int
+  order_order  order_order? @relation(fields: [order_id], references: [id])
+  account_user account_user @relation(fields: [user_id], references: [id])
+
+  @@index([order_id], name: "account_customerevent_order_id_2d6e2d20")
+  @@index([user_id], name: "account_customerevent_user_id_b3d6ec36")
+}
+
+model account_customernote {
+  id                                                          Int           @default(autoincrement()) @id
+  date                                                        DateTime
+  content                                                     String
+  is_public                                                   Boolean
+  customer_id                                                 Int
+  user_id                                                     Int?
+  account_user_account_customernote_customer_idToaccount_user account_user  @relation("account_customernote_customer_idToaccount_user", fields: [customer_id], references: [id])
+  account_user_account_customernote_user_idToaccount_user     account_user? @relation("account_customernote_user_idToaccount_user", fields: [user_id], references: [id])
+
+  @@index([customer_id], name: "account_customernote_customer_id_ec50cbf6")
+  @@index([date], name: "account_customernote_date_231c3474")
+  @@index([user_id], name: "account_customernote_user_id_b10a6c14")
+}
+
+model account_staffnotificationrecipient {
+  id           Int           @default(autoincrement()) @id
+  staff_email  String?       @unique
+  active       Boolean
+  user_id      Int?          @unique
+  account_user account_user? @relation(fields: [user_id], references: [id])
+
+  @@index([staff_email], name: "account_staffnotificationrecipient_staff_email_a309b82e_like")
+}
+
+model account_user {
+  id                                                                                       Int                                 @default(autoincrement()) @id
+  is_superuser                                                                             Boolean
+  email                                                                                    String                              @unique
+  is_staff                                                                                 Boolean
+  is_active                                                                                Boolean
+  password                                                                                 String
+  date_joined                                                                              DateTime
+  last_login                                                                               DateTime?
+  default_billing_address_id                                                               Int?
+  default_shipping_address_id                                                              Int?
+  note                                                                                     String?
+  first_name                                                                               String
+  last_name                                                                                String
+  avatar                                                                                   String?
+  private_metadata                                                                         Json?
+  metadata                                                                                 Json?
+  account_address_account_addressToaccount_user_default_billing_address_id                 account_address?                    @relation("account_addressToaccount_user_default_billing_address_id", fields: [default_billing_address_id], references: [id])
+  account_address_account_addressToaccount_user_default_shipping_address_id                account_address?                    @relation("account_addressToaccount_user_default_shipping_address_id", fields: [default_shipping_address_id], references: [id])
+  account_customerevent                                                                    account_customerevent[]
+  account_customernote_account_customernote_customer_idToaccount_user                      account_customernote[]              @relation("account_customernote_customer_idToaccount_user")
+  account_customernote_account_customernote_user_idToaccount_user                          account_customernote[]              @relation("account_customernote_user_idToaccount_user")
+  account_staffnotificationrecipient                                                       account_staffnotificationrecipient?
+  account_user_addresses                                                                   account_user_addresses[]
+  account_user_groups                                                                      account_user_groups[]
+  account_user_user_permissions                                                            account_user_user_permissions[]
+  checkout_checkout                                                                        checkout_checkout[]
+  giftcard_giftcard                                                                        giftcard_giftcard[]
+  impersonate_impersonationlog_account_userToimpersonate_impersonationlog_impersonating_id impersonate_impersonationlog[]      @relation("account_userToimpersonate_impersonationlog_impersonating_id")
+  impersonate_impersonationlog_account_userToimpersonate_impersonationlog_impersonator_id  impersonate_impersonationlog[]      @relation("account_userToimpersonate_impersonationlog_impersonator_id")
+  order_order                                                                              order_order[]
+  order_orderevent                                                                         order_orderevent[]
+  social_auth_usersocialauth                                                               social_auth_usersocialauth[]
+  wishlist_wishlist                                                                        wishlist_wishlist?
+
+  @@index([default_billing_address_id], name: "userprofile_user_default_billing_address_id_0489abf1")
+  @@index([default_shipping_address_id], name: "userprofile_user_default_shipping_address_id_aae7a203")
+  @@index([email], name: "userprofile_user_email_b0fb0137_like")
+}
+
+model account_user_addresses {
+  id              Int             @default(autoincrement()) @id
+  user_id         Int
+  address_id      Int
+  account_address account_address @relation(fields: [address_id], references: [id])
+  account_user    account_user    @relation(fields: [user_id], references: [id])
+
+  @@index([address_id], name: "userprofile_user_addresses_address_id_ad7646b4")
+  @@index([user_id], name: "userprofile_user_addresses_user_id_bb5aa55e")
+  @@unique([user_id, address_id], name: "userprofile_user_addresses_user_id_address_id_6cb87bcc_uniq")
+}
+
+model account_user_groups {
+  id           Int          @default(autoincrement()) @id
+  user_id      Int
+  group_id     Int
+  auth_group   auth_group   @relation(fields: [group_id], references: [id])
+  account_user account_user @relation(fields: [user_id], references: [id])
+
+  @@index([group_id], name: "userprofile_user_groups_group_id_c7eec74e")
+  @@index([user_id], name: "userprofile_user_groups_user_id_5e712a24")
+  @@unique([user_id, group_id], name: "userprofile_user_groups_user_id_group_id_90ce1781_uniq")
+}
+
+model account_user_user_permissions {
+  id              Int             @default(autoincrement()) @id
+  user_id         Int
+  permission_id   Int
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id])
+  account_user    account_user    @relation(fields: [user_id], references: [id])
+
+  @@index([permission_id], name: "userprofile_user_user_permissions_permission_id_1caa8a71")
+  @@index([user_id], name: "userprofile_user_user_permissions_user_id_6d654469")
+  @@unique([user_id, permission_id], name: "userprofile_user_user_pe_user_id_permission_id_706d65c8_uniq")
+}
+
+model app_app {
+  id                  Int                   @default(autoincrement()) @id
+  private_metadata    Json?
+  metadata            Json?
+  name                String
+  created             DateTime
+  is_active           Boolean
+  app_app_permissions app_app_permissions[]
+  app_apptoken        app_apptoken[]
+  webhook_webhook     webhook_webhook[]
+}
+
+model app_app_permissions {
+  id              Int             @default(autoincrement()) @id
+  app_id          Int
+  permission_id   Int
+  app_app         app_app         @relation(fields: [app_id], references: [id])
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id])
+
+  @@index([permission_id], name: "account_serviceaccount_permissions_permission_id_449791f0")
+  @@index([app_id], name: "account_serviceaccount_permissions_serviceaccount_id_ec78f497")
+  @@unique([app_id, permission_id], name: "account_serviceaccount_p_serviceaccount_id_permis_1686b2ab_uniq")
+}
+
+model app_apptoken {
+  id         Int     @default(autoincrement()) @id
+  name       String
+  auth_token String  @unique
+  app_id     Int
+  app_app    app_app @relation(fields: [app_id], references: [id])
+
+  @@index([auth_token], name: "account_serviceaccounttoken_auth_token_e4c38601_like")
+  @@index([app_id], name: "account_serviceaccounttoken_service_account_id_a8e6dee8")
+}
+
+model auth_group {
+  id                     Int                      @default(autoincrement()) @id
+  name                   String                   @unique
+  account_user_groups    account_user_groups[]
+  auth_group_permissions auth_group_permissions[]
+
+  @@index([name], name: "auth_group_name_a6ea08ec_like")
+}
+
+model auth_group_permissions {
+  id              Int             @default(autoincrement()) @id
+  group_id        Int
+  permission_id   Int
+  auth_group      auth_group      @relation(fields: [group_id], references: [id])
+  auth_permission auth_permission @relation(fields: [permission_id], references: [id])
+
+  @@index([group_id], name: "auth_group_permissions_group_id_b120cbf9")
+  @@index([permission_id], name: "auth_group_permissions_permission_id_84c5c92e")
+  @@unique([group_id, permission_id], name: "auth_group_permissions_group_id_permission_id_0cd325b0_uniq")
+}
+
+model auth_permission {
+  id                            Int                             @default(autoincrement()) @id
+  name                          String
+  content_type_id               Int
+  codename                      String
+  django_content_type           django_content_type             @relation(fields: [content_type_id], references: [id])
+  account_user_user_permissions account_user_user_permissions[]
+  app_app_permissions           app_app_permissions[]
+  auth_group_permissions        auth_group_permissions[]
+
+  @@index([content_type_id], name: "auth_permission_content_type_id_2f476e4b")
+  @@unique([content_type_id, codename], name: "auth_permission_content_type_id_codename_01ab375a_uniq")
+}
+
+model checkout_checkout {
+  created                                                                DateTime
+  last_change                                                            DateTime
+  email                                                                  String
+  token                                                                  String                         @id
+  quantity                                                               Int
+  user_id                                                                Int?
+  billing_address_id                                                     Int?
+  discount_amount                                                        Float
+  discount_name                                                          String?
+  note                                                                   String
+  shipping_address_id                                                    Int?
+  shipping_method_id                                                     Int?
+  voucher_code                                                           String?
+  translated_discount_name                                               String?
+  metadata                                                               Json?
+  private_metadata                                                       Json?
+  currency                                                               String
+  country                                                                String
+  account_address_account_addressTocheckout_checkout_billing_address_id  account_address?               @relation("account_addressTocheckout_checkout_billing_address_id", fields: [billing_address_id], references: [id])
+  account_address_account_addressTocheckout_checkout_shipping_address_id account_address?               @relation("account_addressTocheckout_checkout_shipping_address_id", fields: [shipping_address_id], references: [id])
+  shipping_shippingmethod                                                shipping_shippingmethod?       @relation(fields: [shipping_method_id], references: [id])
+  account_user                                                           account_user?                  @relation(fields: [user_id], references: [id])
+  checkout_checkout_gift_cards                                           checkout_checkout_gift_cards[]
+  checkout_checkoutline                                                  checkout_checkoutline[]
+  payment_payment                                                        payment_payment[]
+
+  @@index([billing_address_id], name: "cart_cart_billing_address_id_9eb62ddd")
+  @@index([shipping_address_id], name: "cart_cart_shipping_address_id_adfddaf9")
+  @@index([shipping_method_id], name: "cart_cart_shipping_method_id_835c02e0")
+  @@index([user_id], name: "cart_cart_user_id_9b4220b9")
+}
+
+model checkout_checkout_gift_cards {
+  id                Int               @default(autoincrement()) @id
+  checkout_id       String
+  giftcard_id       Int
+  checkout_checkout checkout_checkout @relation(fields: [checkout_id], references: [token])
+  giftcard_giftcard giftcard_giftcard @relation(fields: [giftcard_id], references: [id])
+
+  @@index([checkout_id], name: "checkout_checkout_gift_cards_checkout_id_e314728d")
+  @@index([giftcard_id], name: "checkout_checkout_gift_cards_giftcard_id_f5994462")
+  @@unique([checkout_id, giftcard_id], name: "checkout_checkout_gift_c_checkout_id_giftcard_id_401ba79e_uniq")
+}
+
+model checkout_checkoutline {
+  id                     Int                    @default(autoincrement()) @id
+  quantity               Int
+  checkout_id            String
+  variant_id             Int
+  data                   Json
+  checkout_checkout      checkout_checkout      @relation(fields: [checkout_id], references: [token])
+  product_productvariant product_productvariant @relation(fields: [variant_id], references: [id])
+
+  @@index([checkout_id], name: "cart_cartline_cart_id_c7b9981e")
+  @@index([variant_id], name: "cart_cartline_product_id_1a54130f")
+  @@unique([checkout_id, variant_id, data], name: "checkout_cartline_cart_id_variant_id_data_new_de3d8fca_uniq")
+}
+
+model discount_sale {
+  id                        Int                         @default(autoincrement()) @id
+  name                      String
+  type                      String
+  value                     Float
+  end_date                  DateTime?
+  start_date                DateTime
+  discount_sale_categories  discount_sale_categories[]
+  discount_sale_collections discount_sale_collections[]
+  discount_sale_products    discount_sale_products[]
+  discount_saletranslation  discount_saletranslation[]
+}
+
+model discount_sale_categories {
+  id               Int              @default(autoincrement()) @id
+  sale_id          Int
+  category_id      Int
+  product_category product_category @relation(fields: [category_id], references: [id])
+  discount_sale    discount_sale    @relation(fields: [sale_id], references: [id])
+
+  @@index([category_id], name: "discount_sale_categories_category_id_64e132af")
+  @@index([sale_id], name: "discount_sale_categories_sale_id_2aeee4a7")
+  @@unique([sale_id, category_id], name: "discount_sale_categories_sale_id_category_id_be438401_uniq")
+}
+
+model discount_sale_collections {
+  id                 Int                @default(autoincrement()) @id
+  sale_id            Int
+  collection_id      Int
+  product_collection product_collection @relation(fields: [collection_id], references: [id])
+  discount_sale      discount_sale      @relation(fields: [sale_id], references: [id])
+
+  @@index([collection_id], name: "discount_sale_collections_collection_id_f66df9d7")
+  @@index([sale_id], name: "discount_sale_collections_sale_id_a912da4a")
+  @@unique([sale_id, collection_id], name: "discount_sale_collections_sale_id_collection_id_01b57fc3_uniq")
+}
+
+model discount_sale_products {
+  id              Int             @default(autoincrement()) @id
+  sale_id         Int
+  product_id      Int
+  product_product product_product @relation(fields: [product_id], references: [id])
+  discount_sale   discount_sale   @relation(fields: [sale_id], references: [id])
+
+  @@index([product_id], name: "discount_sale_products_product_id_d42c9636")
+  @@index([sale_id], name: "discount_sale_products_sale_id_10e3a20f")
+  @@unique([sale_id, product_id], name: "discount_sale_products_sale_id_product_id_1c2df1f8_uniq")
+}
+
+model discount_saletranslation {
+  id            Int           @default(autoincrement()) @id
+  language_code String
+  name          String?
+  sale_id       Int
+  discount_sale discount_sale @relation(fields: [sale_id], references: [id])
+
+  @@index([sale_id], name: "discount_saletranslation_sale_id_36a69b0a")
+  @@unique([language_code, sale_id], name: "discount_saletranslation_language_code_sale_id_e956163f_uniq")
+}
+
+model discount_voucher {
+  id                           Int                            @default(autoincrement()) @id
+  type                         String
+  name                         String?
+  code                         String                         @unique
+  usage_limit                  Int?
+  used                         Int
+  start_date                   DateTime
+  end_date                     DateTime?
+  discount_value_type          String
+  discount_value               Float
+  min_spent_amount             Float?
+  apply_once_per_order         Boolean
+  countries                    String
+  min_checkout_items_quantity  Int?
+  apply_once_per_customer      Boolean
+  currency                     String
+  discount_voucher_categories  discount_voucher_categories[]
+  discount_voucher_collections discount_voucher_collections[]
+  discount_vouchercustomer     discount_vouchercustomer[]
+  discount_voucher_products    discount_voucher_products[]
+  discount_vouchertranslation  discount_vouchertranslation[]
+  order_order                  order_order[]
+
+  @@index([code], name: "discount_voucher_code_ff8dc52c_like")
+}
+
+model discount_voucher_categories {
+  id               Int              @default(autoincrement()) @id
+  voucher_id       Int
+  category_id      Int
+  product_category product_category @relation(fields: [category_id], references: [id])
+  discount_voucher discount_voucher @relation(fields: [voucher_id], references: [id])
+
+  @@index([category_id], name: "discount_voucher_categories_category_id_fc9d044a")
+  @@index([voucher_id], name: "discount_voucher_categories_voucher_id_19a56338")
+  @@unique([voucher_id, category_id], name: "discount_voucher_categor_voucher_id_category_id_bb5f8954_uniq")
+}
+
+model discount_voucher_collections {
+  id                 Int                @default(autoincrement()) @id
+  voucher_id         Int
+  collection_id      Int
+  product_collection product_collection @relation(fields: [collection_id], references: [id])
+  discount_voucher   discount_voucher   @relation(fields: [voucher_id], references: [id])
+
+  @@index([collection_id], name: "discount_voucher_collections_collection_id_b9de6b54")
+  @@index([voucher_id], name: "discount_voucher_collections_voucher_id_4ce1fde3")
+  @@unique([voucher_id, collection_id], name: "discount_voucher_collect_voucher_id_collection_id_736b8f24_uniq")
+}
+
+model discount_vouchercustomer {
+  id               Int              @default(autoincrement()) @id
+  customer_email   String
+  voucher_id       Int
+  discount_voucher discount_voucher @relation(fields: [voucher_id], references: [id])
+
+  @@index([voucher_id], name: "discount_vouchercustomer_voucher_id_bb55c04f")
+  @@unique([voucher_id, customer_email], name: "discount_vouchercustomer_voucher_id_customer_emai_b7b1d6a1_uniq")
+}
+
+model discount_voucher_products {
+  id               Int              @default(autoincrement()) @id
+  voucher_id       Int
+  product_id       Int
+  product_product  product_product  @relation(fields: [product_id], references: [id])
+  discount_voucher discount_voucher @relation(fields: [voucher_id], references: [id])
+
+  @@index([product_id], name: "discount_voucher_products_product_id_4a3131ff")
+  @@index([voucher_id], name: "discount_voucher_products_voucher_id_8a2e6c3a")
+  @@unique([voucher_id, product_id], name: "discount_voucher_products_voucher_id_product_id_2b092ec4_uniq")
+}
+
+model discount_vouchertranslation {
+  id               Int              @default(autoincrement()) @id
+  language_code    String
+  name             String?
+  voucher_id       Int
+  discount_voucher discount_voucher @relation(fields: [voucher_id], references: [id])
+
+  @@index([voucher_id], name: "discount_vouchertranslation_voucher_id_288246a9")
+  @@unique([language_code, voucher_id], name: "discount_vouchertranslat_language_code_voucher_id_af4428b5_uniq")
+}
+
+model django_content_type {
+  id              Int               @default(autoincrement()) @id
+  app_label       String
+  model           String
+  auth_permission auth_permission[]
+
+  @@unique([app_label, model], name: "django_content_type_app_label_model_76bd3d3b_uniq")
+}
+
+model django_migrations {
+  id      Int      @default(autoincrement()) @id
+  app     String
+  name    String
+  applied DateTime
+}
+
+model django_prices_openexchangerates_conversionrate {
+  id          Int      @default(autoincrement()) @id
+  to_currency String   @unique
+  rate        Float
+  modified_at DateTime
+
+  @@index([to_currency], name: "django_prices_openexchan_to_currency_92c4a4e1_like")
+}
+
+model django_prices_vatlayer_ratetypes {
+  id    Int    @default(autoincrement()) @id
+  types String
+}
+
+model django_prices_vatlayer_vat {
+  id           Int    @default(autoincrement()) @id
+  country_code String
+  data         String
+
+  @@index([country_code], name: "django_prices_vatlayer_vat_country_code_858b2cc4")
+  @@index([country_code], name: "django_prices_vatlayer_vat_country_code_858b2cc4_like")
+}
+
+model django_session {
+  session_key  String   @id
+  session_data String
+  expire_date  DateTime
+
+  @@index([expire_date], name: "django_session_expire_date_a5c62663")
+  @@index([session_key], name: "django_session_session_key_c0390e0f_like")
+}
+
+model django_site {
+  id                Int                @default(autoincrement()) @id
+  domain            String             @unique
+  name              String
+  site_sitesettings site_sitesettings?
+
+  @@index([domain], name: "django_site_domain_a2e37b91_like")
+}
+
+model extensions_pluginconfiguration {
+  id            Int     @default(autoincrement()) @id
+  name          String  @unique
+  description   String
+  active        Boolean
+  configuration Json?
+
+  @@index([name], name: "extensions_pluginconfiguration_name_ae3110fb_like")
+}
+
+model giftcard_giftcard {
+  id                           Int                            @default(autoincrement()) @id
+  code                         String                         @unique
+  created                      DateTime
+  start_date                   DateTime
+  end_date                     DateTime?
+  last_used_on                 DateTime?
+  is_active                    Boolean
+  initial_balance_amount       Float
+  current_balance_amount       Float
+  user_id                      Int?
+  currency                     String
+  account_user                 account_user?                  @relation(fields: [user_id], references: [id])
+  checkout_checkout_gift_cards checkout_checkout_gift_cards[]
+  order_order_gift_cards       order_order_gift_cards[]
+
+  @@index([code], name: "giftcard_giftcard_code_f6fb6be8_like")
+  @@index([user_id], name: "giftcard_giftcard_user_id_ce2401b5")
+}
+
+model impersonate_impersonationlog {
+  id                                                                       Int          @default(autoincrement()) @id
+  session_key                                                              String
+  session_started_at                                                       DateTime?
+  session_ended_at                                                         DateTime?
+  impersonating_id                                                         Int
+  impersonator_id                                                          Int
+  account_user_account_userToimpersonate_impersonationlog_impersonating_id account_user @relation("account_userToimpersonate_impersonationlog_impersonating_id", fields: [impersonating_id], references: [id])
+  account_user_account_userToimpersonate_impersonationlog_impersonator_id  account_user @relation("account_userToimpersonate_impersonationlog_impersonator_id", fields: [impersonator_id], references: [id])
+
+  @@index([impersonating_id], name: "impersonate_impersonationlog_impersonating_id_afd114fc")
+  @@index([impersonator_id], name: "impersonate_impersonationlog_impersonator_id_1ecfe8ce")
+}
+
+model menu_menu {
+  id                                                            Int                 @default(autoincrement()) @id
+  name                                                          String
+  json_content                                                  Json
+  menu_menuitem                                                 menu_menuitem[]
+  site_sitesettings_menu_menuTosite_sitesettings_bottom_menu_id site_sitesettings[] @relation("menu_menuTosite_sitesettings_bottom_menu_id")
+  site_sitesettings_menu_menuTosite_sitesettings_top_menu_id    site_sitesettings[] @relation("menu_menuTosite_sitesettings_top_menu_id")
+}
+
+model menu_menuitem {
+  id                       Int                        @default(autoincrement()) @id
+  name                     String
+  sort_order               Int?
+  url                      String?
+  lft                      Int
+  rght                     Int
+  tree_id                  Int
+  level                    Int
+  category_id              Int?
+  collection_id            Int?
+  menu_id                  Int
+  page_id                  Int?
+  parent_id                Int?
+  product_category         product_category?          @relation(fields: [category_id], references: [id])
+  product_collection       product_collection?        @relation(fields: [collection_id], references: [id])
+  menu_menu                menu_menu                  @relation(fields: [menu_id], references: [id])
+  page_page                page_page?                 @relation(fields: [page_id], references: [id])
+  menu_menuitem            menu_menuitem?             @relation("menu_menuitemTomenu_menuitem_parent_id", fields: [parent_id], references: [id])
+  other_menu_menuitem      menu_menuitem[]            @relation("menu_menuitemTomenu_menuitem_parent_id")
+  menu_menuitemtranslation menu_menuitemtranslation[]
+
+  @@index([category_id], name: "menu_menuitem_category_id_af353a3b")
+  @@index([collection_id], name: "menu_menuitem_collection_id_b913b19e")
+  @@index([menu_id], name: "menu_menuitem_menu_id_f466b139")
+  @@index([page_id], name: "menu_menuitem_page_id_a0c8f92d")
+  @@index([parent_id], name: "menu_menuitem_parent_id_439f55a5")
+  @@index([sort_order], name: "menu_menuitem_sort_order_f96ed184")
+  @@index([tree_id], name: "menu_menuitem_tree_id_0d2e9c9a")
+}
+
+model menu_menuitemtranslation {
+  id            Int           @default(autoincrement()) @id
+  language_code String
+  name          String
+  menu_item_id  Int
+  menu_menuitem menu_menuitem @relation(fields: [menu_item_id], references: [id])
+
+  @@index([menu_item_id], name: "menu_menuitemtranslation_menu_item_id_3445926c")
+  @@unique([language_code, menu_item_id], name: "menu_menuitemtranslation_language_code_menu_item__508dcdd8_uniq")
+}
+
+model order_fulfillment {
+  id                    Int                     @default(autoincrement()) @id
+  tracking_number       String
+  created               DateTime
+  order_id              Int
+  fulfillment_order     Int
+  status                String
+  metadata              Json?
+  private_metadata      Json?
+  order_order           order_order             @relation(fields: [order_id], references: [id])
+  order_fulfillmentline order_fulfillmentline[]
+
+  @@index([order_id], name: "order_fulfillment_order_id_02695111")
+}
+
+model order_fulfillmentline {
+  id                Int               @default(autoincrement()) @id
+  order_line_id     Int
+  quantity          Int
+  fulfillment_id    Int
+  stock_id          Int?
+  order_fulfillment order_fulfillment @relation(fields: [fulfillment_id], references: [id])
+  order_orderline   order_orderline   @relation(fields: [order_line_id], references: [id])
+  warehouse_stock   warehouse_stock?  @relation(fields: [stock_id], references: [id])
+
+  @@index([fulfillment_id], name: "order_fulfillmentline_fulfillment_id_68f3291d")
+  @@index([order_line_id], name: "order_fulfillmentline_order_line_id_7d40e054")
+  @@index([stock_id], name: "order_fulfillmentline_stock_id_da5a99fe")
+}
+
+model order_invoice {
+  id          Int          @default(autoincrement()) @id
+  number      String
+  created     DateTime
+  url         String
+  order_id    Int?
+  order_order order_order? @relation(fields: [order_id], references: [id])
+
+  @@index([order_id], name: "order_invoice_order_id_e06e769e")
+}
+
+model order_order {
+  id                                                               Int                      @default(autoincrement()) @id
+  created                                                          DateTime
+  tracking_client_id                                               String
+  user_email                                                       String
+  token                                                            String                   @unique
+  billing_address_id                                               Int?
+  shipping_address_id                                              Int?
+  user_id                                                          Int?
+  total_net_amount                                                 Float
+  discount_amount                                                  Float
+  discount_name                                                    String?
+  voucher_id                                                       Int?
+  language_code                                                    String
+  shipping_price_gross_amount                                      Float
+  total_gross_amount                                               Float
+  shipping_price_net_amount                                        Float
+  status                                                           String
+  shipping_method_name                                             String?
+  shipping_method_id                                               Int?
+  display_gross_prices                                             Boolean
+  translated_discount_name                                         String?
+  customer_note                                                    String
+  weight                                                           Float
+  checkout_token                                                   String
+  currency                                                         String
+  metadata                                                         Json?
+  private_metadata                                                 Json?
+  account_address_account_addressToorder_order_billing_address_id  account_address?         @relation("account_addressToorder_order_billing_address_id", fields: [billing_address_id], references: [id])
+  account_address_account_addressToorder_order_shipping_address_id account_address?         @relation("account_addressToorder_order_shipping_address_id", fields: [shipping_address_id], references: [id])
+  shipping_shippingmethod                                          shipping_shippingmethod? @relation(fields: [shipping_method_id], references: [id])
+  account_user                                                     account_user?            @relation(fields: [user_id], references: [id])
+  discount_voucher                                                 discount_voucher?        @relation(fields: [voucher_id], references: [id])
+  account_customerevent                                            account_customerevent[]
+  order_fulfillment                                                order_fulfillment[]
+  order_invoice                                                    order_invoice[]
+  order_orderevent                                                 order_orderevent[]
+  order_order_gift_cards                                           order_order_gift_cards[]
+  order_orderline                                                  order_orderline[]
+  payment_payment                                                  payment_payment[]
+
+  @@index([billing_address_id], name: "order_order_billing_address_id_8fe537cf")
+  @@index([shipping_address_id], name: "order_order_shipping_address_id_57e64931")
+  @@index([shipping_method_id], name: "order_order_shipping_method_id_2a742834")
+  @@index([token], name: "order_order_token_ddb7fb7b_like")
+  @@index([user_id], name: "order_order_user_id_7cf9bc2b")
+  @@index([voucher_id], name: "order_order_voucher_id_0748ca22")
+}
+
+model order_orderevent {
+  id           Int           @default(autoincrement()) @id
+  date         DateTime
+  type         String
+  order_id     Int
+  user_id      Int?
+  parameters   Json
+  order_order  order_order   @relation(fields: [order_id], references: [id])
+  account_user account_user? @relation(fields: [user_id], references: [id])
+
+  @@index([order_id], name: "order_orderevent_order_id_09aa7ccd")
+  @@index([user_id], name: "order_orderevent_user_id_1056ac9c")
+}
+
+model order_order_gift_cards {
+  id                Int               @default(autoincrement()) @id
+  order_id          Int
+  giftcard_id       Int
+  giftcard_giftcard giftcard_giftcard @relation(fields: [giftcard_id], references: [id])
+  order_order       order_order       @relation(fields: [order_id], references: [id])
+
+  @@index([giftcard_id], name: "order_order_gift_cards_giftcard_id_f6844926")
+  @@index([order_id], name: "order_order_gift_cards_order_id_ce5608c4")
+  @@unique([order_id, giftcard_id], name: "order_order_gift_cards_order_id_giftcard_id_f58e7356_uniq")
+}
+
+model order_orderline {
+  id                        Int                        @default(autoincrement()) @id
+  product_name              String
+  product_sku               String
+  quantity                  Int
+  unit_price_net_amount     Float
+  unit_price_gross_amount   Float
+  is_shipping_required      Boolean
+  order_id                  Int
+  quantity_fulfilled        Int
+  variant_id                Int?
+  tax_rate                  Float
+  translated_product_name   String
+  currency                  String
+  translated_variant_name   String
+  variant_name              String
+  order_order               order_order                @relation(fields: [order_id], references: [id])
+  product_productvariant    product_productvariant?    @relation(fields: [variant_id], references: [id])
+  order_fulfillmentline     order_fulfillmentline[]
+  product_digitalcontenturl product_digitalcontenturl?
+  warehouse_allocation      warehouse_allocation[]
+
+  @@index([order_id], name: "order_orderline_order_id_eb04ec2d")
+  @@index([variant_id], name: "order_orderline_variant_id_866774cb")
+}
+
+model page_page {
+  id                   Int                    @default(autoincrement()) @id
+  slug                 String                 @unique
+  title                String
+  content              String
+  created              DateTime
+  is_published         Boolean
+  publication_date     DateTime?
+  seo_description      String?
+  seo_title            String?
+  content_json         Json
+  menu_menuitem        menu_menuitem[]
+  page_pagetranslation page_pagetranslation[]
+
+  @@index([slug], name: "page_page_slug_d6b7c8ed_like")
+}
+
+model page_pagetranslation {
+  id              Int       @default(autoincrement()) @id
+  seo_title       String?
+  seo_description String?
+  language_code   String
+  title           String
+  content         String
+  page_id         Int
+  content_json    Json
+  page_page       page_page @relation(fields: [page_id], references: [id])
+
+  @@index([page_id], name: "page_pagetranslation_page_id_60216ef5")
+  @@unique([language_code, page_id], name: "page_pagetranslation_language_code_page_id_35685962_uniq")
+}
+
+model payment_payment {
+  id                   Int                   @default(autoincrement()) @id
+  gateway              String
+  is_active            Boolean
+  created              DateTime
+  modified             DateTime
+  charge_status        String
+  billing_first_name   String
+  billing_last_name    String
+  billing_company_name String
+  billing_address_1    String
+  billing_address_2    String
+  billing_city         String
+  billing_city_area    String
+  billing_postal_code  String
+  billing_country_code String
+  billing_country_area String
+  billing_email        String
+  customer_ip_address  String?
+  cc_brand             String
+  cc_exp_month         Int?
+  cc_exp_year          Int?
+  cc_first_digits      String
+  cc_last_digits       String
+  extra_data           String
+  token                String
+  currency             String
+  total                Float
+  captured_amount      Float
+  checkout_id          String?
+  order_id             Int?
+  to_confirm           Boolean
+  checkout_checkout    checkout_checkout?    @relation(fields: [checkout_id], references: [token])
+  order_order          order_order?          @relation(fields: [order_id], references: [id])
+  payment_transaction  payment_transaction[]
+
+  @@index([checkout_id], name: "payment_paymentmethod_checkout_id_5c0aae3d")
+  @@index([order_id], name: "payment_paymentmethod_order_id_58acb979")
+}
+
+model payment_transaction {
+  id               Int             @default(autoincrement()) @id
+  created          DateTime
+  token            String
+  kind             String
+  is_success       Boolean
+  error            String?
+  currency         String
+  amount           Float
+  gateway_response Json
+  payment_id       Int
+  customer_id      String?
+  action_required  Boolean
+  payment_payment  payment_payment @relation(fields: [payment_id], references: [id])
+
+  @@index([payment_id], name: "payment_transaction_payment_method_id_d35e75c1")
+}
+
+model plugins_pluginconfiguration {
+  id            Int     @default(autoincrement()) @id
+  name          String
+  description   String
+  active        Boolean
+  configuration Json?
+  identifier    String  @unique
+
+  @@index([identifier], name: "plugins_pluginconfiguration_identifier_3d7349fe_like")
+}
+
+model product_assignedproductattribute {
+  id                                      Int                                       @default(autoincrement()) @id
+  product_id                              Int
+  assignment_id                           Int
+  product_attributeproduct                product_attributeproduct                  @relation(fields: [assignment_id], references: [id])
+  product_product                         product_product                           @relation(fields: [product_id], references: [id])
+  product_assignedproductattribute_values product_assignedproductattribute_values[]
+
+  @@index([assignment_id], name: "product_assignedproductattribute_assignment_id_eb2f81a4")
+  @@index([product_id], name: "product_assignedproductattribute_product_id_68be10a3")
+  @@unique([product_id, assignment_id], name: "product_assignedproducta_product_id_assignment_id_d7f5aab5_uniq")
+}
+
+model product_assignedproductattribute_values {
+  id                               Int                              @default(autoincrement()) @id
+  assignedproductattribute_id      Int
+  attributevalue_id                Int
+  product_assignedproductattribute product_assignedproductattribute @relation(fields: [assignedproductattribute_id], references: [id])
+  product_attributevalue           product_attributevalue           @relation(fields: [attributevalue_id], references: [id])
+
+  @@index([assignedproductattribute_id], name: "product_assignedproductatt_assignedproductattribute_i_6d497dfa")
+  @@index([attributevalue_id], name: "product_assignedproductatt_attributevalue_id_5bd29b24")
+  @@unique([assignedproductattribute_id, attributevalue_id], name: "product_assignedproducta_assignedproductattribute_ee1fc0ab_uniq")
+}
+
+model product_assignedvariantattribute {
+  id                                      Int                                       @default(autoincrement()) @id
+  variant_id                              Int
+  assignment_id                           Int
+  product_attributevariant                product_attributevariant                  @relation(fields: [assignment_id], references: [id])
+  product_productvariant                  product_productvariant                    @relation(fields: [variant_id], references: [id])
+  product_assignedvariantattribute_values product_assignedvariantattribute_values[]
+
+  @@index([assignment_id], name: "product_assignedvariantattribute_assignment_id_8fdbffe8")
+  @@index([variant_id], name: "product_assignedvariantattribute_variant_id_27483e6a")
+  @@unique([variant_id, assignment_id], name: "product_assignedvarianta_variant_id_assignment_id_16584418_uniq")
+}
+
+model product_assignedvariantattribute_values {
+  id                               Int                              @default(autoincrement()) @id
+  assignedvariantattribute_id      Int
+  attributevalue_id                Int
+  product_assignedvariantattribute product_assignedvariantattribute @relation(fields: [assignedvariantattribute_id], references: [id])
+  product_attributevalue           product_attributevalue           @relation(fields: [attributevalue_id], references: [id])
+
+  @@index([assignedvariantattribute_id], name: "product_assignedvariantatt_assignedvariantattribute_i_8d6d62ef")
+  @@index([attributevalue_id], name: "product_assignedvariantatt_attributevalue_id_41cc2454")
+  @@unique([assignedvariantattribute_id, attributevalue_id], name: "product_assignedvarianta_assignedvariantattribute_8ffaee19_uniq")
+}
+
+model product_attribute {
+  id                           Int                            @default(autoincrement()) @id
+  slug                         String                         @unique
+  name                         String
+  metadata                     Json?
+  private_metadata             Json?
+  input_type                   String
+  available_in_grid            Boolean
+  visible_in_storefront        Boolean
+  filterable_in_dashboard      Boolean
+  filterable_in_storefront     Boolean
+  value_required               Boolean
+  storefront_search_position   Int
+  is_variant_only              Boolean
+  product_attributeproduct     product_attributeproduct[]
+  product_attributetranslation product_attributetranslation[]
+  product_attributevalue       product_attributevalue[]
+  product_attributevariant     product_attributevariant[]
+
+  @@index([slug], name: "product_attribute_slug_a2ba35f2_like")
+}
+
+model product_attributeproduct {
+  id                               Int                                @default(autoincrement()) @id
+  attribute_id                     Int
+  product_type_id                  Int
+  sort_order                       Int?
+  product_attribute                product_attribute                  @relation(fields: [attribute_id], references: [id])
+  product_producttype              product_producttype                @relation(fields: [product_type_id], references: [id])
+  product_assignedproductattribute product_assignedproductattribute[]
+
+  @@index([attribute_id], name: "product_attributeproduct_attribute_id_0051c706")
+  @@index([product_type_id], name: "product_attributeproduct_product_type_id_54357b3b")
+  @@index([sort_order], name: "product_attributeproduct_sort_order_cec8a8e2")
+  @@unique([attribute_id, product_type_id], name: "product_attributeproduct_attribute_id_product_typ_85ea87be_uniq")
+}
+
+model product_attributetranslation {
+  id                Int               @default(autoincrement()) @id
+  language_code     String
+  name              String
+  attribute_id      Int
+  product_attribute product_attribute @relation(fields: [attribute_id], references: [id])
+
+  @@index([attribute_id], name: "product_productattributetr_product_attribute_id_56b48511")
+  @@unique([language_code, attribute_id], name: "product_productattribute_language_code_product_at_58451db2_uniq")
+}
+
+model product_attributevalue {
+  id                                      Int                                       @default(autoincrement()) @id
+  name                                    String
+  attribute_id                            Int
+  slug                                    String
+  sort_order                              Int?
+  value                                   String
+  product_attribute                       product_attribute                         @relation(fields: [attribute_id], references: [id])
+  product_assignedproductattribute_values product_assignedproductattribute_values[]
+  product_assignedvariantattribute_values product_assignedvariantattribute_values[]
+  product_attributevaluetranslation       product_attributevaluetranslation[]
+
+  @@index([attribute_id], name: "product_attributechoicevalue_attribute_id_c28c6c92")
+  @@index([slug], name: "product_attributechoicevalue_slug_e0d2d25b")
+  @@index([slug], name: "product_attributechoicevalue_slug_e0d2d25b_like")
+  @@index([sort_order], name: "product_attributechoicevalue_sort_order_c4c071c4")
+  @@unique([slug, attribute_id], name: "product_attributevalue_slug_attribute_id_a9b19472_uniq")
+}
+
+model product_attributevaluetranslation {
+  id                     Int                    @default(autoincrement()) @id
+  language_code          String
+  name                   String
+  attribute_value_id     Int
+  product_attributevalue product_attributevalue @relation(fields: [attribute_value_id], references: [id])
+
+  @@index([attribute_value_id], name: "product_attributechoiceval_attribute_choice_value_id_71c4c0a7")
+  @@unique([language_code, attribute_value_id], name: "product_attributechoicev_language_code_attribute__9b58af18_uniq")
+}
+
+model product_attributevariant {
+  id                               Int                                @default(autoincrement()) @id
+  attribute_id                     Int
+  product_type_id                  Int
+  sort_order                       Int?
+  product_attribute                product_attribute                  @relation(fields: [attribute_id], references: [id])
+  product_producttype              product_producttype                @relation(fields: [product_type_id], references: [id])
+  product_assignedvariantattribute product_assignedvariantattribute[]
+
+  @@index([attribute_id], name: "product_attributevariant_attribute_id_e47d3bc3")
+  @@index([product_type_id], name: "product_attributevariant_product_type_id_ba95c6dd")
+  @@index([sort_order], name: "product_attributevariant_sort_order_cf4b00ef")
+  @@unique([attribute_id, product_type_id], name: "product_attributevariant_attribute_id_product_typ_304d6c95_uniq")
+}
+
+model product_category {
+  id                          Int                           @default(autoincrement()) @id
+  name                        String
+  slug                        String                        @unique
+  description                 String
+  lft                         Int
+  rght                        Int
+  tree_id                     Int
+  level                       Int
+  parent_id                   Int?
+  background_image            String?
+  seo_description             String?
+  seo_title                   String?
+  background_image_alt        String
+  description_json            Json
+  metadata                    Json?
+  private_metadata            Json?
+  product_category            product_category?             @relation("product_categoryToproduct_category_parent_id", fields: [parent_id], references: [id])
+  discount_sale_categories    discount_sale_categories[]
+  discount_voucher_categories discount_voucher_categories[]
+  menu_menuitem               menu_menuitem[]
+  other_product_category      product_category[]            @relation("product_categoryToproduct_category_parent_id")
+  product_categorytranslation product_categorytranslation[]
+  product_product             product_product[]
+
+  @@index([parent_id], name: "product_category_parent_id_f6860923")
+  @@index([slug], name: "product_category_slug_e1f8ccc4_like")
+  @@index([tree_id], name: "product_category_tree_id_f3c46461")
+}
+
+model product_categorytranslation {
+  id               Int              @default(autoincrement()) @id
+  seo_title        String?
+  seo_description  String?
+  language_code    String
+  name             String
+  description      String
+  category_id      Int
+  description_json Json
+  product_category product_category @relation(fields: [category_id], references: [id])
+
+  @@index([category_id], name: "product_categorytranslation_category_id_aa8d0917")
+  @@unique([language_code, category_id], name: "product_categorytranslat_language_code_category_i_f71fd11d_uniq")
+}
+
+model product_collection {
+  id                            Int                             @default(autoincrement()) @id
+  name                          String                          @unique
+  slug                          String                          @unique
+  background_image              String?
+  seo_description               String?
+  seo_title                     String?
+  is_published                  Boolean
+  description                   String
+  publication_date              DateTime?
+  background_image_alt          String
+  description_json              Json
+  metadata                      Json?
+  private_metadata              Json?
+  discount_sale_collections     discount_sale_collections[]
+  discount_voucher_collections  discount_voucher_collections[]
+  menu_menuitem                 menu_menuitem[]
+  product_collectionproduct     product_collectionproduct[]
+  product_collectiontranslation product_collectiontranslation[]
+  site_sitesettings             site_sitesettings[]
+
+  @@index([name], name: "product_collection_name_03bb818b_like")
+  @@index([slug], name: "product_collection_slug_ec186116_like")
+}
+
+model product_collectionproduct {
+  id                 Int                @default(autoincrement()) @id
+  collection_id      Int
+  product_id         Int
+  sort_order         Int?
+  product_collection product_collection @relation(fields: [collection_id], references: [id])
+  product_product    product_product    @relation(fields: [product_id], references: [id])
+
+  @@index([collection_id], name: "product_collection_products_collection_id_0bc817dc")
+  @@index([product_id], name: "product_collection_products_product_id_a45a5b06")
+  @@index([sort_order], name: "product_collectionproduct_sort_order_5e7b55bb")
+  @@unique([collection_id, product_id], name: "product_collectionproduc_collection_id_product_id_e582d799_uniq")
+}
+
+model product_collectiontranslation {
+  id                 Int                @default(autoincrement()) @id
+  seo_title          String?
+  seo_description    String?
+  language_code      String
+  name               String
+  collection_id      Int
+  description        String
+  description_json   Json
+  product_collection product_collection @relation(fields: [collection_id], references: [id])
+
+  @@index([collection_id], name: "product_collectiontranslation_collection_id_cfbbd453")
+  @@unique([language_code, collection_id], name: "product_collectiontransl_language_code_collection_b1200cd5_uniq")
+}
+
+model product_digitalcontent {
+  id                        Int                         @default(autoincrement()) @id
+  use_default_settings      Boolean
+  automatic_fulfillment     Boolean
+  content_type              String
+  content_file              String
+  max_downloads             Int?
+  url_valid_days            Int?
+  product_variant_id        Int                         @unique
+  metadata                  Json?
+  private_metadata          Json?
+  product_productvariant    product_productvariant      @relation(fields: [product_variant_id], references: [id])
+  product_digitalcontenturl product_digitalcontenturl[]
+}
+
+model product_digitalcontenturl {
+  id                     Int                    @default(autoincrement()) @id
+  token                  String                 @unique
+  created                DateTime
+  download_num           Int
+  content_id             Int
+  line_id                Int?                   @unique
+  product_digitalcontent product_digitalcontent @relation(fields: [content_id], references: [id])
+  order_orderline        order_orderline?       @relation(fields: [line_id], references: [id])
+
+  @@index([content_id], name: "product_digitalcontenturl_content_id_654197bd")
+}
+
+model product_product {
+  id                               Int                                @default(autoincrement()) @id
+  name                             String
+  description                      String
+  price_amount                     Float
+  publication_date                 DateTime?
+  updated_at                       DateTime?
+  product_type_id                  Int
+  is_published                     Boolean
+  category_id                      Int?
+  seo_description                  String?
+  seo_title                        String?
+  charge_taxes                     Boolean
+  weight                           Float?
+  description_json                 Json
+  metadata                         Json?
+  private_metadata                 Json?
+  minimal_variant_price_amount     Float
+  currency                         String
+  slug                             String                             @unique
+  product_category                 product_category?                  @relation(fields: [category_id], references: [id])
+  product_producttype              product_producttype                @relation(fields: [product_type_id], references: [id])
+  discount_sale_products           discount_sale_products[]
+  discount_voucher_products        discount_voucher_products[]
+  product_assignedproductattribute product_assignedproductattribute[]
+  product_collectionproduct        product_collectionproduct[]
+  product_productimage             product_productimage[]
+  product_producttranslation       product_producttranslation[]
+  product_productvariant           product_productvariant[]
+  wishlist_wishlistitem            wishlist_wishlistitem[]
+
+  @@index([category_id], name: "product_product_category_id_0c725779")
+  @@index([product_type_id], name: "product_product_product_class_id_0547c998")
+  @@index([slug], name: "product_product_slug_76cde0ae_like")
+}
+
+model product_productimage {
+  id                   Int                    @default(autoincrement()) @id
+  image                String
+  ppoi                 String
+  alt                  String
+  sort_order           Int?
+  product_id           Int
+  product_product      product_product        @relation(fields: [product_id], references: [id])
+  product_variantimage product_variantimage[]
+
+  @@index([product_id], name: "product_productimage_product_id_544084bb")
+  @@index([sort_order], name: "product_productimage_sort_order_dfda9c19")
+}
+
+model product_producttranslation {
+  id               Int             @default(autoincrement()) @id
+  seo_title        String?
+  seo_description  String?
+  language_code    String
+  name             String
+  description      String
+  product_id       Int
+  description_json Json
+  product_product  product_product @relation(fields: [product_id], references: [id])
+
+  @@index([product_id], name: "product_producttranslation_product_id_2c2c7532")
+  @@unique([language_code, product_id], name: "product_producttranslati_language_code_product_id_b06ba774_uniq")
+}
+
+model product_producttype {
+  id                       Int                        @default(autoincrement()) @id
+  name                     String
+  has_variants             Boolean
+  is_shipping_required     Boolean
+  weight                   Float
+  is_digital               Boolean
+  metadata                 Json?
+  private_metadata         Json?
+  slug                     String                     @unique
+  product_attributeproduct product_attributeproduct[]
+  product_attributevariant product_attributevariant[]
+  product_product          product_product[]
+
+  @@index([slug], name: "product_producttype_slug_6871faf2_like")
+}
+
+model product_productvariant {
+  id                                Int                                 @default(autoincrement()) @id
+  sku                               String                              @unique
+  name                              String
+  price_override_amount             Float?
+  product_id                        Int
+  cost_price_amount                 Float?
+  track_inventory                   Boolean
+  weight                            Float?
+  metadata                          Json?
+  private_metadata                  Json?
+  currency                          String?
+  product_product                   product_product                     @relation(fields: [product_id], references: [id])
+  checkout_checkoutline             checkout_checkoutline[]
+  order_orderline                   order_orderline[]
+  product_assignedvariantattribute  product_assignedvariantattribute[]
+  product_digitalcontent            product_digitalcontent?
+  product_productvarianttranslation product_productvarianttranslation[]
+  product_variantimage              product_variantimage[]
+  warehouse_stock                   warehouse_stock[]
+  wishlist_wishlistitem_variants    wishlist_wishlistitem_variants[]
+
+  @@index([product_id], name: "product_productvariant_product_id_43c5a310")
+  @@index([sku], name: "product_productvariant_sku_50706818_like")
+}
+
+model product_productvarianttranslation {
+  id                     Int                    @default(autoincrement()) @id
+  language_code          String
+  name                   String
+  product_variant_id     Int
+  product_productvariant product_productvariant @relation(fields: [product_variant_id], references: [id])
+
+  @@index([product_variant_id], name: "product_productvarianttranslation_product_variant_id_1b144a85")
+  @@unique([language_code, product_variant_id], name: "product_productvarianttr_language_code_product_va_cf16d8d0_uniq")
+}
+
+model product_variantimage {
+  id                     Int                    @default(autoincrement()) @id
+  image_id               Int
+  variant_id             Int
+  product_productimage   product_productimage   @relation(fields: [image_id], references: [id])
+  product_productvariant product_productvariant @relation(fields: [variant_id], references: [id])
+
+  @@index([image_id], name: "product_variantimage_image_id_bef14106")
+  @@index([variant_id], name: "product_variantimage_variant_id_81123814")
+}
+
+model shipping_shippingmethod {
+  id                                 Int                                  @default(autoincrement()) @id
+  name                               String
+  maximum_order_price_amount         Float?
+  maximum_order_weight               Float?
+  minimum_order_price_amount         Float?
+  minimum_order_weight               Float?
+  price_amount                       Float
+  type                               String
+  shipping_zone_id                   Int
+  meta                               Json
+  currency                           String
+  shipping_shippingzone              shipping_shippingzone                @relation(fields: [shipping_zone_id], references: [id])
+  checkout_checkout                  checkout_checkout[]
+  order_order                        order_order[]
+  shipping_shippingmethodtranslation shipping_shippingmethodtranslation[]
+
+  @@index([shipping_zone_id], name: "shipping_shippingmethod_shipping_zone_id_265b7413")
+}
+
+model shipping_shippingmethodtranslation {
+  id                      Int                     @default(autoincrement()) @id
+  language_code           String
+  name                    String?
+  shipping_method_id      Int
+  shipping_shippingmethod shipping_shippingmethod @relation(fields: [shipping_method_id], references: [id])
+
+  @@index([shipping_method_id], name: "shipping_shippingmethodtranslation_shipping_method_id_31d925d2")
+  @@unique([language_code, shipping_method_id], name: "shipping_shippingmethodt_language_code_shipping_m_70e4f786_uniq")
+}
+
+model shipping_shippingzone {
+  id                                 Int                                  @default(autoincrement()) @id
+  name                               String
+  countries                          String
+  default                            Boolean
+  shipping_shippingmethod            shipping_shippingmethod[]
+  warehouse_warehouse_shipping_zones warehouse_warehouse_shipping_zones[]
+}
+
+model site_authorizationkey {
+  id                Int               @default(autoincrement()) @id
+  name              String
+  key               String
+  password          String
+  site_settings_id  Int
+  site_sitesettings site_sitesettings @relation(fields: [site_settings_id], references: [id])
+
+  @@index([site_settings_id], name: "site_authorizationkey_site_settings_id_d8397c0f")
+  @@unique([site_settings_id, name], name: "site_authorizationkey_site_settings_id_name_c5f8d1e6_uniq")
+}
+
+model site_sitesettings {
+  id                                                    Int                            @default(autoincrement()) @id
+  header_text                                           String
+  description                                           String
+  site_id                                               Int                            @unique
+  bottom_menu_id                                        Int?
+  top_menu_id                                           Int?
+  display_gross_prices                                  Boolean
+  include_taxes_in_prices                               Boolean
+  charge_taxes_on_shipping                              Boolean
+  track_inventory_by_default                            Boolean
+  homepage_collection_id                                Int?
+  default_weight_unit                                   String
+  automatic_fulfillment_digital_products                Boolean
+  default_digital_max_downloads                         Int?
+  default_digital_url_valid_days                        Int?
+  company_address_id                                    Int?
+  default_mail_sender_address                           String?
+  default_mail_sender_name                              String
+  customer_set_password_url                             String?
+  menu_menu_menu_menuTosite_sitesettings_bottom_menu_id menu_menu?                     @relation("menu_menuTosite_sitesettings_bottom_menu_id", fields: [bottom_menu_id], references: [id])
+  account_address                                       account_address?               @relation(fields: [company_address_id], references: [id])
+  product_collection                                    product_collection?            @relation(fields: [homepage_collection_id], references: [id])
+  django_site                                           django_site                    @relation(fields: [site_id], references: [id])
+  menu_menu_menu_menuTosite_sitesettings_top_menu_id    menu_menu?                     @relation("menu_menuTosite_sitesettings_top_menu_id", fields: [top_menu_id], references: [id])
+  site_authorizationkey                                 site_authorizationkey[]
+  site_sitesettingstranslation                          site_sitesettingstranslation[]
+
+  @@index([bottom_menu_id], name: "site_sitesettings_bottom_menu_id_e2a78098")
+  @@index([company_address_id], name: "site_sitesettings_company_address_id_f0825427")
+  @@index([homepage_collection_id], name: "site_sitesettings_homepage_collection_id_82f45d33")
+  @@index([top_menu_id], name: "site_sitesettings_top_menu_id_ab6f8c46")
+}
+
+model site_sitesettingstranslation {
+  id                Int               @default(autoincrement()) @id
+  language_code     String
+  header_text       String
+  description       String
+  site_settings_id  Int
+  site_sitesettings site_sitesettings @relation(fields: [site_settings_id], references: [id])
+
+  @@index([site_settings_id], name: "site_sitesettingstranslation_site_settings_id_ca085ff6")
+  @@unique([language_code, site_settings_id], name: "site_sitesettingstransla_language_code_site_setti_e767d9e7_uniq")
+}
+
+model social_auth_association {
+  id         Int    @default(autoincrement()) @id
+  server_url String
+  handle     String
+  secret     String
+  issued     Int
+  lifetime   Int
+  assoc_type String
+
+  @@unique([server_url, handle], name: "social_auth_association_server_url_handle_078befa2_uniq")
+}
+
+model social_auth_code {
+  id        Int      @default(autoincrement()) @id
+  email     String
+  code      String
+  verified  Boolean
+  timestamp DateTime
+
+  @@index([code], name: "social_auth_code_code_a2393167")
+  @@index([code], name: "social_auth_code_code_a2393167_like")
+  @@index([timestamp], name: "social_auth_code_timestamp_176b341f")
+  @@unique([email, code], name: "social_auth_code_email_code_801b2d02_uniq")
+}
+
+model social_auth_nonce {
+  id         Int    @default(autoincrement()) @id
+  server_url String
+  timestamp  Int
+  salt       String
+
+  @@unique([server_url, timestamp, salt], name: "social_auth_nonce_server_url_timestamp_salt_f6284463_uniq")
+}
+
+model social_auth_partial {
+  id        Int      @default(autoincrement()) @id
+  token     String
+  next_step Int
+  backend   String
+  data      String
+  timestamp DateTime
+
+  @@index([timestamp], name: "social_auth_partial_timestamp_50f2119f")
+  @@index([token], name: "social_auth_partial_token_3017fea3")
+  @@index([token], name: "social_auth_partial_token_3017fea3_like")
+}
+
+model social_auth_usersocialauth {
+  id           Int          @default(autoincrement()) @id
+  provider     String
+  uid          String
+  extra_data   String
+  user_id      Int
+  account_user account_user @relation(fields: [user_id], references: [id])
+
+  @@index([user_id], name: "social_auth_usersocialauth_user_id_17d28448")
+  @@unique([provider, uid], name: "social_auth_usersocialauth_provider_uid_e6b5e668_uniq")
+}
+
+model warehouse_allocation {
+  id                 Int             @default(autoincrement()) @id
+  quantity_allocated Int
+  order_line_id      Int
+  stock_id           Int
+  order_orderline    order_orderline @relation(fields: [order_line_id], references: [id])
+  warehouse_stock    warehouse_stock @relation(fields: [stock_id], references: [id])
+
+  @@index([order_line_id], name: "warehouse_allocation_order_line_id_693dcb84")
+  @@index([stock_id], name: "warehouse_allocation_stock_id_73541542")
+  @@unique([order_line_id, stock_id], name: "warehouse_allocation_order_line_id_stock_id_aa103861_uniq")
+}
+
+model warehouse_stock {
+  id                     Int                     @default(autoincrement()) @id
+  quantity               Int
+  product_variant_id     Int
+  warehouse_id           String
+  product_productvariant product_productvariant  @relation(fields: [product_variant_id], references: [id])
+  warehouse_warehouse    warehouse_warehouse     @relation(fields: [warehouse_id], references: [id])
+  order_fulfillmentline  order_fulfillmentline[]
+  warehouse_allocation   warehouse_allocation[]
+
+  @@index([product_variant_id], name: "warehouse_stock_product_variant_id_bea58a82")
+  @@index([warehouse_id], name: "warehouse_stock_warehouse_id_cc9d4e5d")
+  @@unique([warehouse_id, product_variant_id], name: "warehouse_stock_warehouse_id_product_variant_id_b04a0a40_uniq")
+}
+
+model warehouse_warehouse {
+  id                                 String                               @id
+  name                               String
+  company_name                       String
+  email                              String
+  address_id                         Int
+  slug                               String                               @unique
+  account_address                    account_address                      @relation(fields: [address_id], references: [id])
+  warehouse_stock                    warehouse_stock[]
+  warehouse_warehouse_shipping_zones warehouse_warehouse_shipping_zones[]
+
+  @@index([address_id], name: "warehouse_warehouse_address_id_d46e1096")
+  @@index([slug], name: "warehouse_warehouse_slug_5ca9c575_like")
+}
+
+model warehouse_warehouse_shipping_zones {
+  id                    Int                   @default(autoincrement()) @id
+  warehouse_id          String
+  shippingzone_id       Int
+  shipping_shippingzone shipping_shippingzone @relation(fields: [shippingzone_id], references: [id])
+  warehouse_warehouse   warehouse_warehouse   @relation(fields: [warehouse_id], references: [id])
+
+  @@index([shippingzone_id], name: "warehouse_warehouse_shipping_zones_shippingzone_id_aeee255b")
+  @@index([warehouse_id], name: "warehouse_warehouse_shipping_zones_warehouse_id_fccd6647")
+  @@unique([warehouse_id, shippingzone_id], name: "warehouse_warehouse_ship_warehouse_id_shippingzon_e18400fa_uniq")
+}
+
+model webhook_webhook {
+  id                   Int                    @default(autoincrement()) @id
+  target_url           String
+  is_active            Boolean
+  secret_key           String?
+  app_id               Int
+  name                 String?
+  app_app              app_app                @relation(fields: [app_id], references: [id])
+  webhook_webhookevent webhook_webhookevent[]
+
+  @@index([app_id], name: "webhook_webhook_service_account_id_1073b057")
+}
+
+model webhook_webhookevent {
+  id              Int             @default(autoincrement()) @id
+  event_type      String
+  webhook_id      Int
+  webhook_webhook webhook_webhook @relation(fields: [webhook_id], references: [id])
+
+  @@index([event_type], name: "webhook_webhookevent_event_type_cd6b8c13")
+  @@index([event_type], name: "webhook_webhookevent_event_type_cd6b8c13_like")
+  @@index([webhook_id], name: "webhook_webhookevent_webhook_id_73b5c9e1")
+}
+
+model wishlist_wishlist {
+  id                    Int                     @default(autoincrement()) @id
+  created_at            DateTime
+  token                 String                  @unique
+  user_id               Int?                    @unique
+  account_user          account_user?           @relation(fields: [user_id], references: [id])
+  wishlist_wishlistitem wishlist_wishlistitem[]
+}
+
+model wishlist_wishlistitem {
+  id                             Int                              @default(autoincrement()) @id
+  created_at                     DateTime
+  product_id                     Int
+  wishlist_id                    Int
+  product_product                product_product                  @relation(fields: [product_id], references: [id])
+  wishlist_wishlist              wishlist_wishlist                @relation(fields: [wishlist_id], references: [id])
+  wishlist_wishlistitem_variants wishlist_wishlistitem_variants[]
+
+  @@index([product_id], name: "wishlist_wishlistitem_product_id_8309716a")
+  @@index([wishlist_id], name: "wishlist_wishlistitem_wishlist_id_a052b63d")
+  @@unique([wishlist_id, product_id], name: "wishlist_wishlistitem_wishlist_id_product_id_3b73b644_uniq")
+}
+
+model wishlist_wishlistitem_variants {
+  id                     Int                    @default(autoincrement()) @id
+  wishlistitem_id        Int
+  productvariant_id      Int
+  product_productvariant product_productvariant @relation(fields: [productvariant_id], references: [id])
+  wishlist_wishlistitem  wishlist_wishlistitem  @relation(fields: [wishlistitem_id], references: [id])
+
+  @@index([productvariant_id], name: "wishlist_wishlistitem_variants_productvariant_id_819ee66b")
+  @@index([wishlistitem_id], name: "wishlist_wishlistitem_variants_wishlistitem_id_ee616761")
+  @@unique([wishlistitem_id, productvariant_id], name: "wishlist_wishlistitem_va_wishlistitem_id_productv_33a1ed29_uniq")
+}
