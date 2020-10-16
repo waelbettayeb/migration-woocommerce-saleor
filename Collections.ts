@@ -55,7 +55,6 @@ export async function updateWooCategories(api) {
       const parentId = parentSlug? wooCategories.find(cat => cat.slug == parentSlug).id : 0
       return {...c, parent: parentId}
     })
-    
     api.post("products/categories/batch", 
     {
       update: wooCategoriesWithParents
