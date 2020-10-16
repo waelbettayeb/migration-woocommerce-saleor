@@ -21,9 +21,9 @@ console.log("Migration started!");
 
 async function main() {
 
-  // createGlobalAttributes(api)
+  // await createGlobalAttributes(api)
   
-  // getGlobalAttributes(api).then((response) => {
+  // await getGlobalAttributes(api).then((response) => {
 
   //   console.log(response.data);
   // })
@@ -31,11 +31,12 @@ async function main() {
   //   console.log(error.response.data);
   // });
 
-  // updateAttributesTerms(api)
-  // createCategories(api)
-  // updateWooCategories(api)
-  // createCategoriesFromCollection(api)
-  createProducts(api)
+  // await updateAttributesTerms(api)
+  // await createCategories(api)
+  // await updateWooCategories(api)
+  // await createCategoriesFromCollection(api)
+  await createProducts(api)
+  console.log("migration finished")
 }
 
 main()
