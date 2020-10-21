@@ -22,7 +22,7 @@ export async function createGlobalAttributes(api: { post: (arg0: string, arg1: {
     slug: at.slug
   }))
 
-  api.post("products/attributes/batch", 
+  await api.post("products/attributes/batch", 
     {create:globalAttributes}
   )
   .then((response: any) => {
@@ -49,7 +49,7 @@ export async function updateAttributesTerms(api) {
       }
     }
   })
-  api.get("products/attributes", {per_page:100}).then((response: { data: any; }) => {
+  await api.get("products/attributes", {per_page:100}).then((response: { data: any; }) => {
     const wooAttributes = response.data
     wooAttributes.map((wAt: { slug: string; id: any; })=>{
       const attribute = attributes.find(at=> `pa_${at.slug}` == wAt.slug)

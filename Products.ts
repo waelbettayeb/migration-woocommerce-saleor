@@ -119,8 +119,6 @@ export async function createProducts(api) {
     const data = products.map(p => {
       const sCategories = p.product_collectionproduct.map(c => ({slug: c.product_collection.slug})).concat({slug: p.product_category.slug})
       const categories = wooCategories.filter(c => sCategories.filter(sC => sC.slug == c.slug).length > 0)
-
-      const images = process.env.IMPORT_IMAGES? p.product_productimage.sort((a, b) => a.sort_order - b.sort_order ).map(i => ({src: `${process.env.ASSETS_ENDPOINT}${i.image}`})) : undefined
       const productAttributes = p.product_assignedproductattribute.map(at =>( {
         variation: false,
         visible: true,
@@ -144,43 +142,83 @@ export async function createProducts(api) {
         stock_quantity: p.product_producttype.has_variants? undefined : p.product_productvariant[0]?.warehouse_stock[0]?.quantity,
         tax_status: 'none',
         categories,
-        images,
         attributes: productAttributes.concat(variationAttributes),
       }
     })
     for (let index = 0; index < data.length; index +=100) {
-      const response = await api.post("products/batch", {create: data.slice(index, index+100)})
-
-      const wooProducts = response.data.create
-      console.log(wooProducts)
-      wooProducts.map(wProduct =>
-        {
-          if(wProduct.type == 'variable'){
-            const product = products.find(p => p.slug == wProduct.slug)
-            const vData = product.product_productvariant?.map(variant => ({
-              sku: variant.sku,
-              regular_price: variant.price_override_amount? variant.price_override_amount:product.price_amount,
-              tax_status: 'none',
-              manage_stock: true,
-              stock_quantity: variant.warehouse_stock[0]?.quantity,
-              attributes: variant.product_assignedvariantattribute.map(at => ({
-                name: at.product_assignedvariantattribute_values[0].product_attributevalue.product_attribute.name,
-                option: at.product_assignedvariantattribute_values[0].product_attributevalue.name
+      try{
+        const response = await api.post("products/batch", {create: data.slice(index, index+100)})
+        const wooProducts = response.data.create
+        wooProducts.map(wProduct =>
+          {
+            if(wProduct.type == 'variable'){
+              const product = products.find(p => p.slug == wProduct.slug)
+              const vData = product.product_productvariant?.map(variant => ({
+                sku: variant.sku,
+                regular_price: variant.price_override_amount? variant.price_override_amount:product.price_amount,
+                tax_status: 'none',
+                manage_stock: true,
+                stock_quantity: variant.warehouse_stock[0]?.quantity,
+                attributes: variant.product_assignedvariantattribute.map(at => ({
+                  name: at.product_assignedvariantattribute_values[0].product_attributevalue.product_attribute.name,
+                  option: at.product_assignedvariantattribute_values[0].product_attributevalue.name
+                }))
               }))
-            }))
-            api.post(`products/${wProduct.id}/variations/batch`, {
-              create: vData
-            })
-            .then((response) => {
-              console.log(response.data);
-            })
-            .catch((error) => {
-              console.log(error.response.data);
-            });
+              api.post(`products/${wProduct.id}/variations/batch`, {
+                create: vData
+              })
+              .then((response) => {
+                // console.log(response.data);
+              })
+              .catch((error) => {
+                console.error(error.error);
+              });
 
+            }
+            return null
           }
-          return null
-        }
       )
+    }catch(error){
+      console.log(error.response)
     }
+  }
+}
+export async function updateProductsImages(api){
+  const offset = 10
+  const products = await prisma.product_product.findMany({
+    select:{
+      name:true,
+      slug:true,
+      product_productimage:{
+        select:{
+          image:true,
+          sort_order:true
+        }
+      },
+    }
+  })
+  for (let index = 280; index < 1300; index+= offset) {
+    try{
+      const response = await api.get("products", {
+        per_page: offset,
+        offset: index
+      })
+      const wooProducts = response.data
+      const data = wooProducts.map(wp => {
+        const product = products?.find(pd => pd.slug == wp.slug)
+        const images = (!wp.images.length)&&product?.product_productimage?.sort((a, b) => a.sort_order - b.sort_order ).map(img => ({src: `${process.env.ASSETS_ENDPOINT}${img.image}`}))
+        return {id: wp.id, images}
+      })
+      console.log(`index: ${index}`);
+      await api.post("products/batch", {update: data})
+      .then((response) => {
+        // console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+      });
+    }catch(response){
+      console.log(response.error)
+    }
+  }
 }

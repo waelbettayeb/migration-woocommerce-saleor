@@ -9,23 +9,15 @@ export async function createCategories(api) {
     select:{
       name:true,
       slug:true,
-      background_image:true,
     }
   })
   const wooCategories = categories.map(cat => {
-    const url =  cat.background_image? `${process.env.ASSETS_ENDPOINT}${cat.background_image}` : null
-    return url&&process.env.IMPORT_IMAGES?{
-      name: cat.name,
-      slug: cat.slug,
-      image: {
-        src: url
-      }
-    }:{
+    return {
       name: cat.name,
       slug: cat.slug,
   }})
-  console.log(wooCategories)
-  api.post("products/categories/batch", 
+  console.log(wooCategories.length)
+  await api.post("products/categories/batch", 
     {create:wooCategories}
   )
   .then((response) => {
@@ -38,37 +30,44 @@ export async function createCategories(api) {
 
 //update parents id
 export async function updateWooCategories(api) {
+  
   const categories = await prisma.product_category.findMany({
     select:{
       name:true,
       slug:true,
+      background_image:true,
       product_category:{select:{slug: true, name:true}}
     }
   })
-  api.get("products/categories", {
-    per_page: 100
-  })
-  .then((response) => {
-    const wooCategories = response.data;
-    const wooCategoriesWithParents = wooCategories.map( c => {
-      const parentSlug = categories.find(cat => c.slug == cat.slug)?.product_category?.slug
-      const parentId = parentSlug? wooCategories.find(cat => cat.slug == parentSlug).id : 0
-      return {...c, parent: parentId}
-    })
-    api.post("products/categories/batch", 
-    {
-      update: wooCategoriesWithParents
-    })
-    .then((response) => {
-      console.log(response.data);
-    })
-    .catch((error) => {
-      console.log(error.response.data);
-    });
-  })
-  .catch((error) => {
-    console.log(error.response.data);
-  });
+  try {
+      const response = await api.get("products/categories", {
+        per_page: 100
+      })
+      const wooCategories = response.data;
+      const wooCategoriesWithParents = wooCategories.map( c => {
+        const category = categories.find(cat => c.slug == cat.slug)
+        const parentSlug = category?.product_category?.slug
+        const url =  category?.background_image? `${process.env.ASSETS_ENDPOINT}${category?.background_image}` : undefined
+
+        const parentId = parentSlug? wooCategories.find(cat => cat.slug == parentSlug)?.id : 0
+        return {...c, parent: parentId, image:{
+          src:url
+        }}
+      })
+      await api.post("products/categories/batch", 
+      {
+        update: wooCategoriesWithParents
+      })
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+      });
+  }catch(error){
+    console.error(error)
+  }
+  
 }
 export async function createCategoriesFromCollection(api) {
 
@@ -76,23 +75,15 @@ export async function createCategoriesFromCollection(api) {
     select:{
       name:true,
       slug:true,
-      background_image:true,
     }
   })
   const wooCategories = collections.map(cat => {
-    const url =  cat.background_image? `${process.env.ASSETS_ENDPOINT}${cat.background_image}` : null
-    return url&&process.env.IMPORT_IMAGES?{
-      name: cat.name,
-      slug: cat.slug,
-      image: {
-        src: url
-      }
-    }:{
+    return {
       name: cat.name,
       slug: cat.slug,
   }})
 
-  api.post("products/categories/batch", 
+  await api.post("products/categories/batch", 
     {create:wooCategories}
   )
   .then((response) => {
@@ -101,4 +92,33 @@ export async function createCategoriesFromCollection(api) {
   .catch((error) => {
     console.log(error.response.data);
   });
+}
+export async function updateCollectionsImages(api){
+  const collections = await prisma.product_collection.findMany({
+    select:{
+      name:true,
+      slug:true,
+      background_image:true
+    }
+  })
+  const response = await api.get("products/categories", {
+    per_page: 100
+  })
+  const wooCategories = response.data
+  const data = wooCategories.map(wcat => {
+    const category = collections.find(c => c.slug == wcat.slug || c.name == wcat.name)
+    const url =  !(wcat.image)&&category?.background_image? `${process.env.ASSETS_ENDPOINT}${category?.background_image}` : undefined
+    return url&&{id: wcat.id, image: {src: url}}
+  })
+  console.log(data)
+  await api.post("products/categories/batch", 
+    {update:data}
+  )
+  .then((response) => {
+    console.log(response.data);
+  })
+  .catch((error) => {
+    console.log(error.response.data);
+  });
+
 }
