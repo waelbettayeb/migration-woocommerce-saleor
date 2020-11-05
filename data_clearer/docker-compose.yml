@@ -1,0 +1,57 @@
+version: '3'
+services:
+  traefik:
+    image: "traefik:v2.3.1"
+    container_name: "traefik231"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.wp_resolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.wp_resolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.wp_resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.wp_resolver.acme.email=ilyes@ilyes-bijoux.com"
+      - "--certificatesresolvers.wp_resolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.ib_resolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.ib_resolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.ib_resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.ib_resolver.acme.email=ilyes@ilyes-bijoux.com"
+      - "--certificatesresolvers.ib_resolver.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.pma_resolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.pma_resolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.pma_resolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.pma_resolver.acme.email=ilyes@ilyes-bijoux.com"
+      - "--certificatesresolvers.pma_resolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+  cleaner:
+    container_name: "site-data-cleaner"
+    image: "node"
+    working_dir: /home/node/app
+    ports:
+      - "8000:8000"
+    # environment:
+    #   - NODE_ENV=production
+    volumes:
+      - ./:/home/node/app
+    # command: "npm i"
+    # command: "npx prisma generate"
+    command: "npm start"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.api-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.api-http.middlewares=api-https@docker"
+      - "traefik.http.routers.api-http.entrypoints=web"
+      - "traefik.http.routers.api-http.rule=Host(`apiv2.ilyes-bijoux.com`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.rule=Host(`apiv2.ilyes-bijoux.com`)"
+      - "traefik.http.routers.api.tls.certresolver=pma_resolver"
+      - "traefik.frontend.rule=Host:apiv2.ilyes-bijoux.com"   
